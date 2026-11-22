@@ -1,0 +1,15 @@
+{
+  "name": "pulselab-dglab-controller",
+  "version": "1.1.4",
+  "private": true,
+  "type": "module",
+  "description": "Third-party Android controller and Phira miss trigger for DG-LAB Coyote V3",
+  "scripts": {
+    "start": "python serve.py --open",
+    "test": "node --test",
+    "check": "node --check js/app.js && node --check js/ble.js && node --check js/protocol.js && node --check js/patterns.js && node --check js/waveform-view.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "name": "PULSE/LAB · DG-LAB 第三方控制器",
+  "short_name": "PULSE/LAB",
+  "description": "面向 Android Chrome 的第三方 DG-LAB Coyote V3 Web Bluetooth 控制器。安全锁、软上限、波形与急停，全部在本机运行。",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#070a08",
+  "theme_color": "#080b09",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["utilities", "lifestyle"],
+  "icons": [
+    {
+      "src": "./assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

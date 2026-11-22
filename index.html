@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080b09">
+  <meta name="color-scheme" content="dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="PULSE/LAB 是一个面向 Android Chrome 的第三方 DG-LAB Coyote V3 蓝牙控制器。本地直连、安全锁、软上限、波形与急停。">
+  <title>PULSE/LAB · DG-LAB 第三方控制器</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./assets/icon-192.png" sizes="192x192" type="image/png">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <link rel="stylesheet" href="./app.css">
+  <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <div class="ambient" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <div class="brand" aria-label="PULSE/LAB 独立 DG-LAB 控制器">
+      <svg class="brand-mark" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+        <rect x="1" y="1" width="34" height="34" rx="10" stroke="currentColor" stroke-opacity=".18"/>
+        <path d="M6 20h5l3-9 5 17 3-11 3 6h5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div class="brand-text">
+        <span class="brand-name">PULSE<span class="brand-slash">/</span>LAB</span>
+        <span class="brand-sub">DG-LAB 独立控制器</span>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <button class="status-pill" id="deviceBtn" type="button" aria-haspopup="dialog" aria-label="设备与连接">
+        <span class="status-dot" id="statusDot" aria-hidden="true"></span>
+        <span class="status-text" id="statusText">未连接</span>
+        <span class="battery-chip" id="batteryChip" hidden>
+          <svg viewBox="0 0 18 10" aria-hidden="true"><rect x=".5" y=".5" width="14" height="9" rx="2.5" /><rect class="battery-fill" id="batteryFill" x="2" y="2" width="11" height="6" rx="1.2"/><path d="M16 3.4v3.2" /></svg>
+          <span id="batteryText">--</span>
+        </span>
+        <span class="demo-chip" id="demoChip" hidden>DEMO</span>
+      </button>
+      <button class="icon-btn" id="settingsBtn" type="button" aria-label="设置" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M19.4 13.5c.05-.5.05-1 0-1.5l1.5-1.2-1.5-2.6-1.85.6a7.7 7.7 0 0 0-1.3-.75L15.9 6h-3l-.35 2.05c-.46.2-.9.46-1.3.75l-1.85-.6-1.5 2.6 1.5 1.2a7 7 0 0 0 0 1.5l-1.5 1.2 1.5 2.6 1.85-.6c.4.3.84.55 1.3.75L12.9 20h3l.35-2.05c.46-.2.9-.46 1.3-.75l1.85.6 1.5-2.6-1.5-1.2Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="network-banner" id="networkBanner" hidden role="status">
+    <span class="network-dot" aria-hidden="true"></span>
+    <span id="networkText">离线模式：页面已缓存，蓝牙控制不受影响。</span>
+  </div>
+
+  <main id="main" class="app-main">
+    <div class="compat-notice" id="compatNotice" hidden role="alert">
+      <div class="compat-icon" aria-hidden="true">!</div>
+      <div>
+        <strong id="compatTitle">当前浏览器无法使用蓝牙</strong>
+        <p id="compatText">请使用 Android Chrome，并通过 HTTPS 打开本页。</p>
+        <button class="text-btn" id="compatHelpBtn" type="button">查看解决方法</button>
+      </div>
+    </div>
+
+    <section class="connect-hero" id="connectHero" aria-labelledby="heroTitle">
+      <div class="hero-top">
+        <span class="eyebrow"><span class="eyebrow-pulse" aria-hidden="true"></span><span id="heroEyebrowLabel">WEB BLUETOOTH · COYOTE V3</span></span>
+        <span class="nonofficial">非官方</span>
+      </div>
+      <h1 id="heroTitle">让脉冲，<br><span>跟上你的节奏。</span></h1>
+      <p class="hero-copy" id="heroCopy">在 Android Chrome 里直接连接 Coyote V3。无需安装原生 App，无云端中转，所有指令只在本机与设备之间传输。</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary btn-lg" id="heroConnectBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6.5 7.5 17.5 16.5 12 21V3l5.5 4.5L6.5 16.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          连接设备
+        </button>
+        <button class="btn btn-ghost btn-lg" id="heroDemoBtn" type="button">进入演示</button>
+      </div>
+      <div class="hero-foot">
+        <span>本地处理</span><i></i><span>10 Hz 指令流</span><i></i><span>无账号</span>
+        <button class="text-btn" id="installBtnHero" type="button" hidden>安装到主屏幕</button>
+      </div>
+    </section>
+
+    <section class="control-area" id="controlArea" aria-label="脉冲控制台" data-phase="disconnected">
+      <div class="section-heading">
+        <div>
+          <span class="section-kicker">OUTPUT</span>
+          <h2>强度</h2>
+        </div>
+        <div class="session-state" id="sessionState" role="status" aria-live="polite" aria-atomic="true">
+          <span class="session-dot" aria-hidden="true"></span>
+          <span id="sessionText">安全锁</span>
+          <span class="session-clock" id="sessionClock" aria-hidden="true" hidden>20:00</span>
+        </div>
+      </div>
+
+      <div class="channels">
+        <article class="channel channel-a" id="channelCardA" data-channel="A" aria-labelledby="channelTitleA">
+          <header class="channel-head">
+            <div class="channel-identity">
+              <span class="channel-letter">A</span>
+              <span id="channelTitleA">CHANNEL A</span>
+            </div>
+            <button class="channel-power is-on" id="toggleA" type="button" aria-label="A 通道波形开关" aria-pressed="true" disabled>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.7v6.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5.7 5.5a6 6 0 1 0 8.6 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+          </header>
+
+          <div class="intensity-readout">
+            <span class="intensity-value" id="valueA">0</span>
+            <span class="intensity-denom">/ 200</span>
+          </div>
+          <div class="intensity-meta">
+            <span>实际 <b id="actualA">0</b></span>
+            <button class="limit-btn" id="limitBtnA" type="button" aria-label="编辑 A 通道软上限">上限 <b id="limitA">30</b></button>
+          </div>
+          <div class="meter" aria-hidden="true"><span id="meterA"></span></div>
+
+          <div class="step-controls">
+            <button class="step-btn" id="decA" type="button" aria-label="A 通道强度减一" disabled>
+              <span aria-hidden="true">−</span>
+            </button>
+            <button class="step-btn" id="incA" type="button" aria-label="A 通道强度加一" disabled>
+              <span aria-hidden="true">+</span>
+            </button>
+          </div>
+
+          <label class="select-field">
+            <span>波形</span>
+            <select id="patternA" aria-label="A 通道波形" disabled></select>
+            <svg class="select-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </label>
+
+          <canvas class="channel-canvas" id="canvasA" aria-hidden="true"></canvas>
+          <footer class="channel-foot">
+            <span id="hzA">-- Hz</span>
+            <span id="patternStateA">待机</span>
+          </footer>
+        </article>
+
+        <article class="channel channel-b" id="channelCardB" data-channel="B" aria-labelledby="channelTitleB">
+          <header class="channel-head">
+            <div class="channel-identity">
+              <span class="channel-letter">B</span>
+              <span id="channelTitleB">CHANNEL B</span>
+            </div>
+            <button class="channel-power is-on" id="toggleB" type="button" aria-label="B 通道波形开关" aria-pressed="true" disabled>
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 2.7v6.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5.7 5.5a6 6 0 1 0 8.6 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </button>
+          </header>
+
+          <div class="intensity-readout">
+            <span class="intensity-value" id="valueB">0</span>
+            <span class="intensity-denom">/ 200</span>
+          </div>
+          <div class="intensity-meta">
+            <span>实际 <b id="actualB">0</b></span>
+            <button class="limit-btn" id="limitBtnB" type="button" aria-label="编辑 B 通道软上限">上限 <b id="limitB">30</b></button>
+          </div>
+          <div class="meter" aria-hidden="true"><span id="meterB"></span></div>
+
+          <div class="step-controls">
+            <button class="step-btn" id="decB" type="button" aria-label="B 通道强度减一" disabled>
+              <span aria-hidden="true">−</span>
+            </button>
+            <button class="step-btn" id="incB" type="button" aria-label="B 通道强度加一" disabled>
+              <span aria-hidden="true">+</span>
+            </button>
+          </div>
+
+          <label class="select-field">
+            <span>波形</span>
+            <select id="patternB" aria-label="B 通道波形" disabled></select>
+            <svg class="select-chevron" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="m4 6 4 4 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </label>
+
+          <canvas class="channel-canvas" id="canvasB" aria-hidden="true"></canvas>
+          <footer class="channel-foot">
+            <span id="hzB">-- Hz</span>
+            <span id="patternStateB">待机</span>
+          </footer>
+        </article>
+      </div>
+
+      <section class="rhythm-panel" aria-labelledby="rhythmTitle">
+        <div class="panel-head">
+          <div>
+            <span class="section-kicker">RHYTHM</span>
+            <h2 id="rhythmTitle">节奏</h2>
+          </div>
+          <div class="segmented" id="speedControl" role="group" aria-label="节奏速度">
+            <button type="button" data-speed="0.5" disabled>0.5×</button>
+            <button type="button" data-speed="1" disabled class="is-active">1×</button>
+            <button type="button" data-speed="1.5" disabled>1.5×</button>
+            <button type="button" data-speed="2" disabled>2×</button>
+          </div>
+        </div>
+        <label class="depth-control" for="depthRange">
+          <span class="depth-label">波形深度 <b id="depthValue">70</b><i>%</i></span>
+          <input type="range" id="depthRange" min="10" max="100" step="1" value="70" disabled>
+        </label>
+        <p class="hint">深度改变脉冲包络，不会改变通道强度。真正的输出上限由软上限和主机的实体旋钮共同约束。</p>
+      </section>
+
+      <section class="safety-panel" aria-labelledby="safetyTitle">
+        <div class="safety-top">
+          <div class="safety-symbol" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4.8 6v5.4c0 4.5 3.1 7.7 7.2 9.6 4.1-1.9 7.2-5.1 7.2-9.6V6L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m8.8 12 2.1 2.1 4.5-4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div>
+            <h2 id="safetyTitle">本机安全边界</h2>
+            <p>所有强度请求都先经过本机软上限，并在设备返回 B1 确认后才更新读数。</p>
+          </div>
+        </div>
+        <div class="safety-metrics">
+          <div><span>A 软上限</span><b id="safetyLimitA">30</b></div>
+          <div><span>B 软上限</span><b id="safetyLimitB">30</b></div>
+          <div><span>自动停止</span><b id="safetyAutoStop">20 分钟</b></div>
+        </div>
+        <div class="safety-actions">
+          <button class="text-btn" id="openSafetyBtn" type="button">调整安全参数</button>
+          <button class="text-btn danger-text" id="quickZeroBtn" type="button" disabled>立即归零</button>
+        </div>
+      </section>
+
+      <details class="events" id="eventsDetails">
+        <summary>
+          <span>会话事件</span>
+          <span class="event-count" id="eventCount">0</span>
+        </summary>
+        <ol class="event-list" id="eventList"></ol>
+      </details>
+
+      <p class="disclaimer">PULSE/LAB 是非官方第三方工具，与 DG-LAB 官方无关联，仅限自愿的成年人使用。蓝牙可能断开，软件安全措施不能替代人的判断。请从 0 开始、逐级增加，并确保使用环境安全。</p>
+    </section>
+  </main>
+
+  <div class="control-dock" id="controlDock" hidden>
+    <div class="dock-info">
+      <span class="dock-label" id="dockLabel">安全锁启用</span>
+      <span class="dock-hint" id="dockHint">按住启用，设备会先归零</span>
+    </div>
+    <button class="arm-btn" id="armBtn" type="button">
+      <span class="arm-progress" id="armProgress" aria-hidden="true"></span>
+      <svg class="arm-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><rect x="4.5" y="11" width="15" height="10" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M12 15v2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span id="armText">按住 1 秒启用</span>
+    </button>
+    <button class="estop-btn" id="estopBtn" type="button" hidden>
+      <span class="estop-dot" aria-hidden="true"></span><span id="estopText">急停</span>
+    </button>
+    <button class="dock-menu" id="dockMenuBtn" type="button" aria-label="设备与安全设置">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 7h14M5 12h14M5 17h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden>
+    <span class="toast-dot" aria-hidden="true"></span>
+    <span id="toastText"></span>
+  </div>
+
+  <dialog class="sheet onboarding" id="onboardingDialog" aria-labelledby="onboardingTitle">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <div class="onboarding-mark" aria-hidden="true">
+      <svg viewBox="0 0 48 48" fill="none"><path d="M5 27h7l4.5-13L25 37l5-17 4 7h9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <span class="section-kicker">BEFORE YOU START</span>
+    <h2 id="onboardingTitle">先读这一点</h2>
+    <div class="safety-points">
+      <div><b>01</b><p><strong>这是非官方工具。</strong>仅适配 Coyote V3 的公开蓝牙协议，与 DG-LAB 官方无关联。请自行承担使用风险。</p></div>
+      <div><b>02</b><p><strong>从零开始，逐级增加。</strong>不同身体部位、电极位置和湿度都会显著改变体感。永远先用最低强度测试。</p></div>
+      <div><b>03</b><p><strong>急停不是万能的。</strong>蓝牙可能延迟或断开。不要把强度调到难以承受的水平。请勿将电极置于头部、胸部或跨心脏位置；有心脏起搏器或其他植入电子设备、孕期、皮肤破损时不要使用；不要在驾驶、洗浴、睡眠或无人看护时使用。</p></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn btn-primary btn-lg" id="onboardingAcceptBtn" type="button">我已了解，进入控制台</button>
+    </div>
+    <p class="sheet-footnote">控制台默认处于锁定状态。每次启用前都需要长按，并先向设备写入归零指令；若设备当前强度不为零，还会等待归零回执。</p>
+  </dialog>
+
+  <dialog class="sheet" id="deviceDialog" aria-labelledby="deviceDialogTitle">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <header class="sheet-head">
+      <div>
+        <span class="section-kicker">DEVICE</span>
+        <h2 id="deviceDialogTitle">设备与连接</h2>
+      </div>
+      <button class="icon-btn sheet-close" type="button" data-close aria-label="关闭设备面板">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+
+    <div class="device-card">
+      <div class="device-glyph" id="deviceGlyph" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none"><path d="M8 18h3l2.3-7L18 25l2.6-9 2.2 4H27" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="device-card-copy">
+        <span class="device-state" id="deviceState">未连接</span>
+        <strong id="deviceName">Coyote V3</strong>
+        <span id="deviceMeta">等待蓝牙连接</span>
+      </div>
+      <span class="device-battery" id="deviceBattery" hidden></span>
+    </div>
+
+    <div class="sheet-actions stack">
+      <button class="btn btn-primary btn-lg" id="dialogConnectBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6.5 7.5 17.5 16.5 12 21V3l5.5 4.5L6.5 16.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        搜索 Coyote V3
+      </button>
+      <button class="btn btn-ghost" id="dialogDemoBtn" type="button">进入演示模式（不连接硬件）</button>
+      <button class="btn btn-ghost" id="reconnectBtn" type="button" hidden>重新连接上次设备</button>
+      <button class="btn btn-danger-ghost" id="disconnectBtn" type="button" hidden>断开连接</button>
+    </div>
+
+    <button class="install-row" id="installBtn" type="button" hidden>
+      <span class="install-icon" aria-hidden="true">↓</span>
+      <span><strong>安装到主屏幕</strong><small>像 App 一样全屏打开，离线也能用</small></span>
+      <span class="install-chevron" aria-hidden="true">›</span>
+    </button>
+
+    <div class="connection-notes" id="webConnectionNotes">
+      <h3>连接检查</h3>
+      <ul>
+        <li>使用 <strong>Android Chrome</strong>，不要用微信、QQ 或系统浏览器的内置 WebView。</li>
+        <li>页面必须通过 <strong>HTTPS</strong> 或 localhost 打开，否则浏览器不会提供蓝牙权限。</li>
+        <li>打开手机蓝牙；首次搜索时允许附近设备权限。若列表为空，打开一次定位服务再重试。</li>
+        <li>设备开机并远离其他已连接的手机。设备广播名以 <code>47L</code> 开头。</li>
+      </ul>
+      <p class="protocol-note">协议：Coyote V3 · Service <code>180C</code> · Write <code>150A</code> · Notify <code>150B</code> · 电量 <code>180A/1500</code></p>
+    </div>
+
+    <div class="connection-notes" id="nativeConnectionNotes" hidden>
+      <h3>APK 连接检查</h3>
+      <ul>
+        <li>打开手机蓝牙；首次连接时允许 PULSE/LAB 使用<strong>附近的设备</strong>权限。</li>
+        <li>APK 使用原生 BLE，直接与主机通信，<strong>不需要网络、浏览器或 HTTPS</strong>。</li>
+        <li>搜索并选择 Coyote V3 主机 <code>47L121000</code>；无线传感器 <code>47L120100</code> 不适用。</li>
+        <li>如果搜索不到，确认主机已开机且没有被其他手机或官方 App 占用，然后重试。</li>
+      </ul>
+      <p class="protocol-note">原生 BLE · 本地离线 · 不经过服务器 · 不收集数据</p>
+    </div>
+  </dialog>
+
+  <dialog class="sheet" id="settingsDialog" aria-labelledby="settingsDialogTitle">
+    <div class="sheet-handle" aria-hidden="true"></div>
+    <header class="sheet-head">
+      <div>
+        <span class="section-kicker">SETTINGS</span>
+        <h2 id="settingsDialogTitle">安全与偏好</h2>
+      </div>
+      <button class="icon-btn sheet-close" type="button" data-close aria-label="关闭设置">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </header>
+
+    <div class="settings-body">
+      <section class="settings-section" aria-labelledby="limitsTitle">
+        <div class="settings-title">
+          <h3 id="limitsTitle">软上限</h3>
+          <span>0–200</span>
+        </div>
+        <p class="settings-help">写入主机 BF 指令，限制 App 与实体旋钮可达到的最大强度。降低后当前强度也会被拉回上限。</p>
+        <div class="limit-editors">
+          <label class="limit-editor" for="limitInputA">
+            <span class="limit-tag tag-a">A</span>
+            <span>通道 A</span>
+            <input type="number" id="limitInputA" inputmode="numeric" min="0" max="200" step="1" value="30">
+          </label>
+          <label class="limit-editor" for="limitInputB">
+            <span class="limit-tag tag-b">B</span>
+            <span>通道 B</span>
+            <input type="number" id="limitInputB" inputmode="numeric" min="0" max="200" step="1" value="30">
+          </label>
+        </div>
+        <p class="settings-warning" id="limitWarning" hidden>软上限高于 100。请确认你了解设备与自己的身体状况。</p>
+        <button class="btn btn-secondary" id="applySafetyBtn" type="button">应用安全参数</button>
+      </section>
+
+      <section class="settings-section" aria-labelledby="prefsTitle">
+        <div class="settings-title"><h3 id="prefsTitle">会话保护</h3></div>
+        <label class="switch-row" for="backgroundStopSwitch">
+          <span><strong>切到后台时急停</strong><small>离开页面、锁屏或切换 App 时立即归零并锁定</small></span>
+          <input type="checkbox" id="backgroundStopSwitch" checked>
+          <span class="switch-ui" aria-hidden="true"></span>
+        </label>
+        <label class="switch-row" for="hapticsSwitch">
+          <span><strong>触感反馈</strong><small>按键和急停时给出短振动</small></span>
+          <input type="checkbox" id="hapticsSwitch" checked>
+          <span class="switch-ui" aria-hidden="true"></span>
+        </label>
+        <label class="select-row" for="autoStopSelect">
+          <span><strong>自动停止</strong><small>启用后倒计时结束会强制归零</small></span>
+          <select id="autoStopSelect">
+            <option value="0">关闭</option>
+            <option value="10">10 分钟</option>
+            <option value="20" selected>20 分钟</option>
+            <option value="30">30 分钟</option>
+            <option value="45">45 分钟</option>
+          </select>
+        </label>
+      </section>
+
+      <details class="advanced-section">
+        <summary>
+          <span><strong>专家参数：脉冲平衡</strong><small>写入 BF，掉电保存</small></span>
+          <span class="summary-plus" aria-hidden="true">+</span>
+        </summary>
+        <div class="advanced-body">
+          <p class="settings-help">数值越高，低频脉冲的冲击感/刺激感越强。它会改变体感，但不会提高通道强度。默认 128。</p>
+          <div class="balance-group">
+            <div class="balance-head"><span class="limit-tag tag-a">A</span>通道 A</div>
+            <label class="range-row" for="balance1A"><span>低频冲击感</span><b id="balance1AValue">128</b><input type="range" id="balance1A" min="0" max="255" step="1" value="128"></label>
+            <label class="range-row" for="balance2A"><span>低频刺激感</span><b id="balance2AValue">128</b><input type="range" id="balance2A" min="0" max="255" step="1" value="128"></label>
+          </div>
+          <div class="balance-group">
+            <div class="balance-head"><span class="limit-tag tag-b">B</span>通道 B</div>
+            <label class="range-row" for="balance1B"><span>低频冲击感</span><b id="balance1BValue">128</b><input type="range" id="balance1B" min="0" max="255" step="1" value="128"></label>
+            <label class="range-row" for="balance2B"><span>低频刺激感</span><b id="balance2BValue">128</b><input type="range" id="balance2B" min="0" max="255" step="1" value="128"></label>
+          </div>
+          <button class="btn btn-secondary" id="applyBalanceBtn" type="button">写入平衡参数</button>
+        </div>
+      </details>
+
+      <section class="settings-section about-section" aria-labelledby="aboutTitle">
+        <div class="settings-title"><h3 id="aboutTitle">关于</h3><span class="version">v1.0.0</span></div>
+        <p>PULSE/LAB 是开源的非官方 Coyote V3 Web Bluetooth 控制器。它不连接 DG-LAB 云服务，不收集数据。</p>
+        <div class="about-links">
+          <a href="https://github.com/dungeonlab-open/dglab-bluetooth-protocol/blob/main/coyote/v3/README.md" target="_blank" rel="noopener noreferrer">Coyote V3 协议参考</a>
+          <button class="text-btn" id="showSafetyBtn" type="button">安全说明</button>
+          <button class="text-btn" id="resetPrefsBtn" type="button">重置本机偏好</button>
+        </div>
+      </section>
+    </div>
+  </dialog>
+
+  <noscript>
+    <div class="noscript">PULSE/LAB 需要 JavaScript 才能通过 Web Bluetooth 控制设备。</div>
+  </noscript>
+</body>
+</html>
